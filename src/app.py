@@ -59,13 +59,32 @@ def sitemap():
 # any other endpoint will try to serve it like a static file
 
 
-@app.route('/<path:path>', methods=['GET'])
-def serve_any_other_file(path):
-    if not os.path.isfile(os.path.join(static_file_dir, path)):
-        path = 'index.html'
-    response = send_from_directory(static_file_dir, path)
-    response.cache_control.max_age = 0  # avoid cache memory
-    return response
+@app.route('/user', methods=['POST'])
+def create_user():
+    data = request.json
+    email_in_data = data.get("email")
+    password_in_data = data.get("password")
+    if None in [email_in_data, password_in_data ]:
+        return jsonify({
+            "message": "email and password are required"
+        }), 400
+    user_email = email_in_data
+    user_password= password_in_data
+    user_already_exists = db.session.execute(db.select(User).filter_by(email = user_email)).one_or_none()
+
+if user_already_exists:
+    return jsonify({"message": "invalid email"}), 400
+
+new_user = User(email=user_email, password=password_in_data, is_active=True)
+
+try:
+    db.session.add(new_user)
+    db.session.commit()
+except Exception as error:
+    print(error)    
+    db.session.rollback()
+    return jsonify ({"message": "DB error"})
+return  jsonify({}), 201
 
 
 # this only runs if `$ python src/main.py` is executed
