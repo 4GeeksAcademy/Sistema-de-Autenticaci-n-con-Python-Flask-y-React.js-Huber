@@ -5,7 +5,7 @@ from flask import Flask, request, jsonify, url_for, Blueprint
 from api.models import db, User
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
 
 api = Blueprint('api', __name__)
 
@@ -64,3 +64,18 @@ def login():
     token = create_access_token(identity=user.id)
 
     return jsonify({"token": token}), 201
+
+@api.route('profileInfo', methods=['GET'])
+@jwt_required()
+def getProfileInfo():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if user is None:
+        return jsonify({"message": "User not found"})
+
+    user_data = {
+         "id": user.id,
+        "email": user.email
+    }
+
+    return jsonify(user_data), 200

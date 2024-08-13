@@ -3,19 +3,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 		store: {
 			token: sessionStorage.getItem("token") || null,
 			user: JSON.parse(sessionStorage.getItem("user")) || null,
-			message: null,
-			demo: [
-				{
-					title: "FIRST",
-					background: "white",
-					initial: "white"
-				},
-				{
-					title: "SECOND",
-					background: "white",
-					initial: "white"
-				}
-			]
+			
 		},
 		actions: {
 			// Use getActions to call a function within a fuction
@@ -63,12 +51,12 @@ const getState = ({ getStore, getActions, setStore }) => {
 					if (response.ok) {
 						return true
 					} else {
-						console.error("Failed to sign up")
+						console.error("Fallo sign up")
 						return false
 					  }
 
 				} catch (error) {
-					console.log("Error during sign up", error)
+					console.log("Error sign up", error)
 				  }
 			},
 
@@ -83,7 +71,7 @@ const getState = ({ getStore, getActions, setStore }) => {
                     });
 
 					if (response.status !== 201) {
-						console.error("There has been some error"); 
+						console.error("Error"); 
 						
                         return false;
 					}
@@ -99,6 +87,34 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.log("ERROR CATCH:", error)
 				}
 			},
+
+			isLoggedIn: () => {
+				const token = sessionStorage.getItem('token');
+				return !!token;
+			},
+
+			getProfileInfo: async (email, password) => {
+				setStore({ ...getStore(), error: null });
+				try {
+					const resp = await fetch(process.env.BACKEND_URL + 'api/profileInfo', {
+						method: 'GET',
+						headers: {
+							'Accept': 'application/json',
+							'Content-Type': 'application/json',
+							'Authorization': 'Bearer ' + sessionStorage.getItem('token')
+						},
+						body: JSON.stringify({
+							email, password
+						})
+					});
+					const data = await resp.json();
+					setStore({ ...getStore(), userInfo: data });
+
+				} catch {
+					setStore({ ...getStore(), error: "Error obteniendo informacion de usuario" });
+				}
+			},
+
 			logout: () => {
 				sessionStorage.removeItem("token");
                 setStore({ token: null });
