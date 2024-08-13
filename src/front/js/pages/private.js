@@ -40,7 +40,7 @@ export const Private = () => {
                 
                     <>
                         <p>{store.userInfo?.email}</p>
-                        <p className="text-red">{store.error}</p>
+                        
                     </>
                 
                     <p>Loading information...</p>
